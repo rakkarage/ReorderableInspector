@@ -155,8 +155,8 @@ namespace SubjectNerd.Utilities
 					obj = GetValue(obj, element);
 				}
 			}
-			if (obj is T)
-				return (T) obj;
+			if (obj is T t)
+				return t;
 			return null;
 		}
 
@@ -223,8 +223,7 @@ namespace SubjectNerd.Utilities
 
 		private static object GetValue(object source, string name, int index)
 		{
-			var enumerable = GetValue(source, name) as IEnumerable;
-			if (enumerable == null)
+			if (!(GetValue(source, name) is IEnumerable enumerable))
 				return null;
 			var enm = enumerable.GetEnumerator();
 			while (index-- >= 0)

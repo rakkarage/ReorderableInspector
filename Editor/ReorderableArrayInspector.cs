@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 // Uncomment the line below to turn all arrays into reorderable lists
-//#define LIST_ALL_ARRAYS
+#define LIST_ALL_ARRAYS
 
 // Uncomment the line below to make all ScriptableObject fields editable
-//#define EDIT_ALL_SCRIPTABLES
+#define EDIT_ALL_SCRIPTABLES
 
 using System;
 using System.Collections.Generic;
@@ -42,9 +42,6 @@ namespace SubjectNerd.Utilities
 	[CanEditMultipleObjects]
 	public class ReorderableArrayInspector : Editor
 	{
-		// Set this to true to turn every array in non custom inspectors into reorderable lists
-		private const bool LIST_ALL_ARRAYS = false;
-
 		protected static string GetGrandParentPath(SerializedProperty property)
 		{
 			string parent = property.propertyPath;
@@ -58,7 +55,7 @@ namespace SubjectNerd.Utilities
 
 		protected static bool FORCE_INIT = false;
 		[DidReloadScripts]
-		private static void HandleScriptReload()
+		public static void HandleScriptReload()
 		{
 			FORCE_INIT = true;
 
@@ -195,11 +192,9 @@ namespace SubjectNerd.Utilities
 					if (evt.type == EventType.DragPerform)
 					{
 						DragAndDrop.AcceptDrag();
-						Action<SerializedProperty, Object[]> handler = null;
-						if (propDropHandlers.TryGetValue(property.propertyPath, out handler))
+						if (propDropHandlers.TryGetValue(property.propertyPath, out Action<SerializedProperty, Object[]> handler))
 						{
-							if (handler != null)
-								handler(property, DragAndDrop.objectReferences);
+							handler?.Invoke(property, DragAndDrop.objectReferences);
 						}
 						else
 						{
@@ -226,8 +221,7 @@ namespace SubjectNerd.Utilities
 				if (property.arraySize <= 0)
 					return 0;
 
-				int count;
-				if (countIndex.TryGetValue(property.propertyPath, out count))
+				if (countIndex.TryGetValue(property.propertyPath, out int count))
 					return count;
 
 				var element = property.GetArrayElementAtIndex(0);
@@ -306,7 +300,7 @@ namespace SubjectNerd.Utilities
 		}
 
 #region Initialization
-		private void OnEnable()
+		public void OnEnable()
 		{
 			InitInspector();
 		}
@@ -670,8 +664,7 @@ namespace SubjectNerd.Utilities
 			if (listIndex.Count > 0)
 				listData = listIndex.Find(data => property.propertyPath.StartsWith(data.Parent));
 
-			Editor scriptableEditor;
-			bool isScriptableEditor = editableIndex.TryGetValue(property.propertyPath, out scriptableEditor);
+			bool isScriptableEditor = editableIndex.TryGetValue(property.propertyPath, out Editor scriptableEditor);
 
 			// Has ReorderableList
 			if (listData != null)
